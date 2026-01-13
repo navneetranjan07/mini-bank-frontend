@@ -1,0 +1,78 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-soft text-gray-700;
+}
+
+.btn-green {
+  @apply bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700;
+}
+
+.btn-red {
+  @apply bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700;
+}
+
+.btn-blue {
+  @apply bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700;
+}
+
+.input {
+  @apply border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+.btn-green {
+  @apply bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700;
+}
+
+.btn-red {
+  @apply bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700;
+}
+
+.btn-blue {
+  @apply bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700;
+}
+
+/* ===== Shared Inputs ===== */
+.input {
+  @apply w-full h-11 border rounded-lg pl-11 pr-10
+         focus:outline-none focus:ring-2 focus:ring-blue-500
+         bg-white text-gray-800;
+}
+
+/* ===== Buttons ===== */
+.btn-blue {
+  @apply bg-blue-600 text-white py-2 rounded-lg
+         hover:bg-blue-700 transition;
+}
+
+body {
+  @apply bg-gray-100 text-gray-800;
+}
+
+.card {
+  @apply bg-white rounded-2xl shadow-sm p-6;
+}
+
+.btn-primary {
+  @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition;
+}
+
+.btn-danger {
+  @apply bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition;
+}
+
+.input {
+  @apply w-full h-11 border rounded-lg px-4
+         focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+.badge-credit {
+  @apply bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold;
+}
+
+.badge-debit {
+  @apply bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-semibold;
+}
