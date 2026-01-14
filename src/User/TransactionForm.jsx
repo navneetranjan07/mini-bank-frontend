@@ -1,13 +1,48 @@
 import { useState } from "react";
 import API from "../api/api";
 import { toast } from "react-toastify";
+import PinModal from "../components/PinModal";
+import { useAuth } from "../auth/AuthContext";
 
 export default function TransactionForm({ accountNumber, onSuccess }) {
   const [amount, setAmount] = useState("");
   const [toAccount, setToAccount] = useState("");
   const [loading, setLoading] = useState(false);
+  const [type, setType] = useState(null);
+  const { pinSet } = useAuth();
 
-  const handle = async (type) => {
+  // 🔒 HARD BLOCK IF PIN NOT SET
+  if (!pinSet) {
+    return (
+      <div className="card text-center text-red-600">
+        🔒 Please create your transaction PIN to use banking features.
+      </div>
+    );
+  }
+
+  // ================= DEPOSIT (NO PIN) =================
+  const handleDeposit = async () => {
+    try {
+      setLoading(true);
+      await API.post("/transaction/deposit", {
+        accountNumber,
+        amount
+      });
+
+      toast.success("Deposit successful");
+      setAmount("");
+      onSuccess();
+    } catch (e) {
+      toast.error(e.response?.data || "Deposit failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ================= WITHDRAW / TRANSFER (PIN REQUIRED) =================
+  const handleConfirm = async (pin) => {
+    if (!type) return;
+
     try {
       setLoading(true);
 
@@ -15,12 +50,16 @@ export default function TransactionForm({ accountNumber, onSuccess }) {
         await API.post("/transaction/transfer", {
           fromAccount: accountNumber,
           toAccount,
-          amount
+          amount,
+          pin
         });
-      } else {
-        await API.post(`/transaction/${type.toLowerCase()}`, {
+      }
+
+      if (type === "WITHDRAW") {
+        await API.post("/transaction/withdraw", {
           accountNumber,
-          amount
+          amount,
+          pin
         });
       }
 
@@ -28,10 +67,11 @@ export default function TransactionForm({ accountNumber, onSuccess }) {
       setAmount("");
       setToAccount("");
       onSuccess();
-    } catch {
-      toast.error("Transaction failed");
+    } catch (e) {
+      toast.error(e.response?.data || "Transaction failed");
     } finally {
       setLoading(false);
+      setType(null);
     }
   };
 
@@ -49,7 +89,7 @@ export default function TransactionForm({ accountNumber, onSuccess }) {
       <div className="flex gap-3 mb-4">
         <button
           disabled={loading}
-          onClick={() => handle("DEPOSIT")}
+          onClick={handleDeposit}
           className="btn-primary w-full"
         >
           Deposit
@@ -57,7 +97,7 @@ export default function TransactionForm({ accountNumber, onSuccess }) {
 
         <button
           disabled={loading}
-          onClick={() => handle("WITHDRAW")}
+          onClick={() => setType("WITHDRAW")}
           className="btn-danger w-full"
         >
           Withdraw
@@ -73,11 +113,18 @@ export default function TransactionForm({ accountNumber, onSuccess }) {
 
       <button
         disabled={loading}
-        onClick={() => handle("TRANSFER")}
+        onClick={() => setType("TRANSFER")}
         className="btn-primary w-full"
       >
         Transfer
       </button>
+
+      <PinModal
+        open={type === "WITHDRAW" || type === "TRANSFER"}
+        onClose={() => setType(null)}
+        onConfirm={handleConfirm}
+        loading={loading}
+      />
     </div>
   );
 }
