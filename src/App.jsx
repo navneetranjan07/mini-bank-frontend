@@ -1,14 +1,11 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-
 import PrivateRoute from "./auth/PrivateRoute";
 
-/* USER */
 import UserDashboard from "./User/UserDashboard";
+import CreatePinWarning from "./User/CreatePinWarning";
 
-/* ADMIN */
 import AdminLayout from "./Admin/AdminLayout";
 import AdminDashboard from "./Admin/AdminDashboard";
 import AdminUsers from "./Admin/AdminUsers";
@@ -18,23 +15,15 @@ import AdminTransactions from "./Admin/AdminTransactions";
 export default function App() {
   return (
     <Routes>
-
-      {/* ================= PUBLIC ================= */}
       <Route path="/" element={<Navigate to="/login" />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* ================= CUSTOMER ================= */}
-      <Route
-        path="/dashboard"
-        element={
-          <PrivateRoute roles={["ROLE_CUSTOMER"]}>
-            <UserDashboard />
-          </PrivateRoute>
-        }
-      />
+      <Route element={<PrivateRoute roles={["ROLE_CUSTOMER"]} />}>
+        <Route path="/dashboard" element={<UserDashboard />} />
+        <Route path="/create-pin" element={<CreatePinWarning />} />
+      </Route>
 
-      {/* ================= ADMIN ================= */}
       <Route
         path="/admin"
         element={
@@ -49,9 +38,7 @@ export default function App() {
         <Route path="transactions" element={<AdminTransactions />} />
       </Route>
 
-      {/* ================= FALLBACK ================= */}
       <Route path="*" element={<Navigate to="/login" />} />
-
     </Routes>
   );
 }

@@ -2,63 +2,39 @@ import { useState } from "react";
 import API from "../api/api";
 import { toast } from "react-toastify";
 import PinModal from "../components/PinModal";
-import { useAuth } from "../auth/AuthContext";
 
 export default function TransactionForm({ accountNumber, onSuccess }) {
   const [amount, setAmount] = useState("");
   const [toAccount, setToAccount] = useState("");
   const [loading, setLoading] = useState(false);
-  const [type, setType] = useState(null);
-  const { pinSet } = useAuth();
-
-  // 🔒 HARD BLOCK IF PIN NOT SET
-  if (!pinSet) {
-    return (
-      <div className="card text-center text-red-600">
-        🔒 Please create your transaction PIN to use banking features.
-      </div>
-    );
-  }
-
-  // ================= DEPOSIT (NO PIN) =================
-  const handleDeposit = async () => {
-    try {
-      setLoading(true);
-      await API.post("/transaction/deposit", {
-        accountNumber,
-        amount
-      });
-
-      toast.success("Deposit successful");
-      setAmount("");
-      onSuccess();
-    } catch (e) {
-      toast.error(e.response?.data || "Deposit failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ================= WITHDRAW / TRANSFER (PIN REQUIRED) =================
+  const [action, setAction] = useState(null); 
   const handleConfirm = async (pin) => {
-    if (!type) return;
-
     try {
       setLoading(true);
 
-      if (type === "TRANSFER") {
-        await API.post("/transaction/transfer", {
-          fromAccount: accountNumber,
-          toAccount,
-          amount,
+      if (!amount || Number(amount) <= 0) {
+        toast.error("Enter valid amount");
+        return;
+      }
+
+      if (action === "WITHDRAW") {
+        await API.post("/transaction/withdraw", {
+          accountNumber,
+          amount: Number(amount),  
           pin
         });
       }
 
-      if (type === "WITHDRAW") {
-        await API.post("/transaction/withdraw", {
-          accountNumber,
-          amount,
+      if (action === "TRANSFER") {
+        if (!toAccount) {
+          toast.error("Enter receiver account number");
+          return;
+        }
+
+        await API.post("/transaction/transfer", {
+          accountNumber,           
+          toAccount,               
+          amount: Number(amount),   
           pin
         });
       }
@@ -66,12 +42,13 @@ export default function TransactionForm({ accountNumber, onSuccess }) {
       toast.success("Transaction successful");
       setAmount("");
       setToAccount("");
+      setAction(null);
       onSuccess();
+
     } catch (e) {
       toast.error(e.response?.data || "Transaction failed");
     } finally {
       setLoading(false);
-      setType(null);
     }
   };
 
@@ -89,15 +66,7 @@ export default function TransactionForm({ accountNumber, onSuccess }) {
       <div className="flex gap-3 mb-4">
         <button
           disabled={loading}
-          onClick={handleDeposit}
-          className="btn-primary w-full"
-        >
-          Deposit
-        </button>
-
-        <button
-          disabled={loading}
-          onClick={() => setType("WITHDRAW")}
+          onClick={() => setAction("WITHDRAW")}
           className="btn-danger w-full"
         >
           Withdraw
@@ -113,15 +82,16 @@ export default function TransactionForm({ accountNumber, onSuccess }) {
 
       <button
         disabled={loading}
-        onClick={() => setType("TRANSFER")}
+        onClick={() => setAction("TRANSFER")}
         className="btn-primary w-full"
       >
         Transfer
       </button>
 
+      
       <PinModal
-        open={type === "WITHDRAW" || type === "TRANSFER"}
-        onClose={() => setType(null)}
+        open={action === "WITHDRAW" || action === "TRANSFER"}
+        onClose={() => setAction(null)}
         onConfirm={handleConfirm}
         loading={loading}
       />

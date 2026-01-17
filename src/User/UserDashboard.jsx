@@ -4,12 +4,19 @@ import AccountCard from "./AccountCard";
 import TransactionForm from "./TransactionForm";
 import TransactionHistory from "./TransactionHistory";
 import { LogOut } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
 
 export default function UserDashboard() {
   const [account, setAccount] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const navigate = useNavigate();
+  const { pinSet } = useAuth();
+
+ 
+  if (pinSet === false) {
+    return <Navigate to="/create-pin" replace />;
+  }
 
   const logout = () => {
     localStorage.clear();
@@ -24,7 +31,6 @@ export default function UserDashboard() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">
-      {/* HEADER */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">My Bank Dashboard</h1>
         <button onClick={logout} className="btn-danger flex items-center gap-2">
@@ -32,7 +38,6 @@ export default function UserDashboard() {
         </button>
       </div>
 
-      {/* BALANCE + ACTIONS */}
       <div className="grid md:grid-cols-2 gap-6">
         <AccountCard account={account} />
         <TransactionForm
@@ -41,7 +46,6 @@ export default function UserDashboard() {
         />
       </div>
 
-      {/* HISTORY */}
       <TransactionHistory refreshKey={refreshKey} />
     </div>
   );
