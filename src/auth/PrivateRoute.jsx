@@ -1,14 +1,16 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "./AuthContext";
 
-export default function PrivateRoute({ roles }) {
-  const { token, role } = useAuth();
+export default function PrivateRoute({ roles, children }) {
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
 
-  if (!token) return <Navigate to="/login" replace />;
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
 
   if (roles && !roles.includes(role)) {
     return <Navigate to="/login" replace />;
   }
 
-  return <Outlet />;
+  return children ? children : <Outlet />;
 }

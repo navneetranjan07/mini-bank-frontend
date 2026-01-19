@@ -6,12 +6,16 @@ import TransactionHistory from "./TransactionHistory";
 import { LogOut } from "lucide-react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
+import ChangePinModal from "./ChangePinModal";
+
 
 export default function UserDashboard() {
   const [account, setAccount] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const navigate = useNavigate();
   const { pinSet } = useAuth();
+  const [showChangePin, setShowChangePin] = useState(false);
+
 
  
   if (pinSet === false) {
@@ -47,6 +51,16 @@ export default function UserDashboard() {
       </div>
 
       <TransactionHistory refreshKey={refreshKey} />
+
+      <button onClick={() => setShowChangePin(true)} className="btn-secondary">
+  Change PIN
+</button>
+
+<ChangePinModal
+  open={showChangePin}
+  onClose={() => setShowChangePin(false)}
+/>
+
     </div>
   );
 }

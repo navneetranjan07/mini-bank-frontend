@@ -1,53 +1,61 @@
 import { useEffect, useState } from "react";
-import API from "../api/api";
+import axios from "axios";
+
+const API = "http://localhost:8080";
 
 export default function AdminTransactions() {
-  const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState([]);
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    API.get("/admin/transactions")
-      .then((res) => {
-        setTransactions(Array.isArray(res.data) ? res.data : []);
+    axios
+      .get(`${API}/api/admin/transactions/user-wise`, {
+        headers: { Authorization: `Bearer ${token}` },
       })
-      .catch(() => setTransactions([]))
-      .finally(() => setLoading(false));
+      .then((res) => setUsers(res.data))
+      .catch(console.error);
   }, []);
 
-  if (loading) return <p>Loading transactions...</p>;
-
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">All Transactions</h1>
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-bold">User-wise Transactions</h1>
 
-      {transactions.length === 0 ? (
-        <p className="text-gray-500">No transactions found</p>
-      ) : (
-        <table className="w-full border">
-          <thead>
-            <tr className="bg-gray-100 text-left">
-              <th className="p-2 border">Type</th>
-              <th className="p-2 border">Amount</th>
-              <th className="p-2 border">Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {transactions.map((t, i) => (
-              <tr key={i}>
-                <td className="p-2 border font-semibold">
-                  {t.type}
-                </td>
-                <td className="p-2 border">
-                  ₹ {t.amount}
-                </td>
-                <td className="p-2 border text-sm text-gray-600">
-                  {new Date(t.transactionDate).toLocaleString()}
-                </td>
+      {users.map((user) => (
+        <div key={user.userId} className="bg-white shadow rounded p-4">
+          {/* USER HEADER */}
+          <div className="flex justify-between mb-3">
+            <div>
+              <p className="font-semibold">{user.name}</p>
+              <p className="text-sm text-gray-600">{user.email}</p>
+            </div>
+            <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded">
+              Total: {user.totalTransactions}
+            </span>
+          </div>
+
+          {/* TRANSACTION TABLE */}
+          <table className="w-full border text-sm">
+            <thead className="bg-gray-200">
+              <tr>
+                <th className="border p-2">Type</th>
+                <th className="border p-2">Amount</th>
+                <th className="border p-2">Date</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            </thead>
+            <tbody>
+              {user.transactions.map((t, i) => (
+                <tr key={i} className="text-center">
+                  <td className="border p-2">{t.type}</td>
+                  <td className="border p-2">₹ {t.amount}</td>
+                  <td className="border p-2">
+                    {new Date(t.transactionDate).toLocaleString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ))}
     </div>
   );
 }

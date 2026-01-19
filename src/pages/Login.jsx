@@ -55,6 +55,7 @@ export default function Login() {
               className="w-full h-11 border rounded-lg pl-11 pr-4
                          focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={email}
+              autoFocus
               onChange={(e) => setEmail(e.target.value)}
               required
             />

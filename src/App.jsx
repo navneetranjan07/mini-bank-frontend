@@ -16,14 +16,17 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/login" />} />
+
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
+      {/* CUSTOMER ROUTES */}
       <Route element={<PrivateRoute roles={["ROLE_CUSTOMER"]} />}>
         <Route path="/dashboard" element={<UserDashboard />} />
         <Route path="/create-pin" element={<CreatePinWarning />} />
       </Route>
 
+      {/* ADMIN ROUTES */}
       <Route
         path="/admin"
         element={
