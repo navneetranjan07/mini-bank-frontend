@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import API from "../api/api";
 import { toast } from "react-toastify";
@@ -7,7 +8,9 @@ export default function TransactionForm({ accountNumber, onSuccess }) {
   const [amount, setAmount] = useState("");
   const [toAccount, setToAccount] = useState("");
   const [loading, setLoading] = useState(false);
-  const [action, setAction] = useState(null); 
+  const [action, setAction] = useState(null);
+  const navigate = useNavigate();
+
   const handleConfirm = async (pin) => {
     try {
       setLoading(true);
@@ -20,7 +23,7 @@ export default function TransactionForm({ accountNumber, onSuccess }) {
       if (action === "WITHDRAW") {
         await API.post("/transaction/withdraw", {
           accountNumber,
-          amount: Number(amount),  
+          amount: Number(amount),
           pin
         });
       }
@@ -32,9 +35,9 @@ export default function TransactionForm({ accountNumber, onSuccess }) {
         }
 
         await API.post("/transaction/transfer", {
-          accountNumber,           
-          toAccount,               
-          amount: Number(amount),   
+          accountNumber,
+          toAccount,
+          amount: Number(amount),
           pin
         });
       }
@@ -46,7 +49,19 @@ export default function TransactionForm({ accountNumber, onSuccess }) {
       onSuccess();
 
     } catch (e) {
-      toast.error(e.response?.data || "Transaction failed");
+      const message = e.response?.data;
+      if (message?.includes("User Locked")) {
+        toast.error("Your account has been locked due to multiple incorrect PIN attempts. Please contact your branch.");
+       localStorage.setItem("locked", "true");
+       localStorage.removeItem("token");
+       localStorage.removeItem("role");
+
+       setTimeout(() => {
+         navigate("/login", { replace: true });
+       }, 1500);
+      } else {
+        toast.error(message || "Transaction failed");
+      }
     } finally {
       setLoading(false);
     }
@@ -88,7 +103,7 @@ export default function TransactionForm({ accountNumber, onSuccess }) {
         Transfer
       </button>
 
-      
+
       <PinModal
         open={action === "WITHDRAW" || action === "TRANSFER"}
         onClose={() => setAction(null)}
